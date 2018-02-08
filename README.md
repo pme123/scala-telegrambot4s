@@ -79,6 +79,8 @@ Before we start let's explain shortly the difference between Webhooks and Pollin
 
 So for this workshop, or examples in general **Polling** is the way to go.
 ## Hello User Bot
+(Here the [Solution Branch](https://github.com/pme123/scala-telegrambot4s/tree/add-hello-bot) if you have problems)
+
 Let's greet the Bot and it should return that with a personalized greeting.
 
 * Create a Scala object in the bots package: `HelloBot`
@@ -110,7 +112,7 @@ hello - Simple Hello World.
 * Now lets say hello to your Bot (the command should be available, when hitting `/` in the text-field).
 
 ## Counter Bot
-(Here the [Solution Branch](https://github.com/pme123/play-scala-telegrambot4s/tree/add-callback-bot) if you have problems)
+(Here the [Solution Branch](https://github.com/pme123/scala-telegrambot4s/tree/add-callback-bot) if you have problems)
 ### Callbacks
 The first step to implement a conversation with a user is to understand the concept of `callbacks`.
 To guide the user through a conversation you can provide a [keyboard](https://core.telegram.org/bots#keyboards).
