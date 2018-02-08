@@ -8,6 +8,6 @@ lazy val root = (project in file(".")).
       version      := "0.1.0-SNAPSHOT"
     )),
     name := "Hello",
-    libraryDependencies += "info.mukel" %% "telegrambot4s" % "3.0.14",
+    libraryDependencies += telegrambot4s,
     libraryDependencies += scalaTest % Test
   )
