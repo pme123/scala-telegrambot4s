@@ -1,4 +1,4 @@
-# Telegram Bot Demo with Scala/ Play
+# Telegram Bot Demo with Scala
 
 This page was originally created for a [JUGs workshop](https://www.jug.ch/html/events/2017/chatbot_programmieren.html).
 
@@ -11,84 +11,74 @@ The following chapters document the workshop step by step.
 
 **A basic understanding of SBT and Scala will help;).**
 
-# Setup the Bot
+# Preparation for the Workshop
+## Create an account for Telegram
+To get an account for Telegram you need a mobile number.
+
+So the easiest way is to install the mobile app in your app store:
+
+![image](https://user-images.githubusercontent.com/3437927/35958215-dfd0646e-0c9f-11e8-9fd4-6487a4822db3.png)
+
+## Setup the Scala project
+To make sure that every one is on the same page, we start with the same Project.
+
+* Make sure SBT is installed - you need sbt >= 1.0. Here the steps: https://www.scala-sbt.org/1.0/docs/Setup.html.
+* now on the terminal wherever you want the project to be: $`sbt new scala/scala-seed.g8`
+* If everything compiles and the test runs on your IDE, you are done!
+# You are ready to go!
+
+# Workshop
+This part we do together step by step.
+## What
+We want to write a Bot that does something for us:
+* Simplify or enabling a Workflow (that's my personal Use Case)
+* Bring a FAQ to the users
+* Provide information without the need to provide a GUI!
+* Or just for fun!
+## How
+![image](https://user-images.githubusercontent.com/3437927/35958755-c1bbd08c-0ca2-11e8-93aa-13e8f18746b0.png)
+
+Each Messaging Provider (e.g. Telegram) provides an **API** to interact with the Messaging infrastructur.
+That's what your Bot needs to communicate with the world. 
+These APIs are usually stateless web services that return data structure as JSON.
+As this is messaging **everything is asynchronous** (I get back to that)!
+
+Now to simplify that, you find **Wrappers** in some programming languages. 
+As for Scala they are a bit rare - so thankfully for Telegram there is a great one:
+[telegrambot4s](https://github.com/mukel/telegrambot4s) 
+
+And on top of that comes **your Bot**!
+
+## Setup the Bot
 * Register a user on [Telegram](https://telegram.org) if you don't have one.
 * Search for the BotFather in the Telegram App (he helps you to setup and manage your bots).
 * Ask the BotFather for a new bot: `/newbot`
 * He will guide you through the simple process (nice example of a chat bot;).
 * The generated token is all what you need!
 
-# Setup the Project
-* You need a SBT installation
-* Clone this repo: `git clone https://github.com/pme123/play-scala-telegrambot4s.git`
-
-The master branch contains only:
-
-* [Giter8 template](https://github.com/playframework/play-scala-seed.g8)  for generating a Play project seed in Scala.
-* the dependency: `libraryDependencies += "info.mukel" %% "telegrambot4s" % "3.0.14"`
-
-# JSON-Client
-(Here the [Solution Branch](https://github.com/pme123/play-scala-telegrambot4s/tree/add-hello-bot) if you have problems)
-
-Let's use the provided [JSON-API from Telegram](https://core.telegram.org/api) directly. We only wan't to show the info about our bot on the index page.
+## Setup the Project
+* Go to the project you setup before the workshop.
+* Add the dependency to our Wrapper: `libraryDependencies += "info.mukel" %% "telegrambot4s" % "3.0.14"`
 
 First we want to **provide the token** in a safe way to avoid leaking it.
-
-* Create a package object in the `bots` package and add:
+* Create a package object in the `example` package and add:
 ```
 lazy val botToken: String = scala.util.Properties
   .envOrNone("BOT_TOKEN")
   .getOrElse(Source.fromResource("bot.token").getLines().mkString)
 ```
-* You can now add a `bot.token` with your token and put it in your `conf` folder.
+* You can now add a `bot.token` with your token and put it in your `src/main/resources` folder.
+Add `bot.token` to your `.gitignore` if you have a public repo (otherwise you get a mail from the Github's Security Agent;)
 * (or if security is of no concern, you can add it directly: `lazy val botToken = "[BOT_TOKEN]"`
 
-Implement the **web-service client**:
-
-* Add a dependency for the web-service client: `libraryDependencies += ws`
-* Inject the web-socket client and the execution context (async processing) in the `HomeController`:
-```
-class HomeController @Inject()(cc: ControllerComponents
-                               , ws: WSClient)
-                              (implicit ec: ExecutionContext)
-```
-* The URL for the API is needed: `lazy val url = s"https://api.telegram.org/bot$botToken/getMe"`
-* Adjust the `HomeController.index()` function:
-```
-  def index() = Action.async { implicit request: Request[AnyContent] =>
-    ws.url(url)
-      .get() // as this returns a Future the function is now async
-      .map(_.json) // the the body as json
-      .map(_.toString())
-      .map(str => Ok(views.html.index(str))) // forward the result to the index page
-  }
-```
-* Adjust the index.scala.html with the added parameter and render it:
-```
-@(myBot: String)
-
-@main("Telegram Bots rock!") {
-  <h1>Welcome to our Bot!</h1>
-    <p>@myBot</p>
-}
-```
-* Open the sbt console in the project base: play-scala-telegrambot4s>`sbt`
-* Run the application [play-scala-telegrambot4s] $ `run`
-* In a browser go to: [localhost:9000](http://localhost:9000)
-* As result you should see a JSON string, like: `{"ok":true,"result":{"id":301276637,"is_bot":true,"first_name":"MeetupDemoBot","username":"MeetupDemoBot"}}`
-
-That's it - let's move now to the [Scala API](https://github.com/mukel/telegrambot4s). For the next Bot examples we don't need the Play server - so you can shut it down.
-
-(you need to update the HomeControllerSpec - or if you are lazy remove it)
-
-# Webhooks vs Polling
+## Webhooks vs Polling
 Before we start let's explain shortly the difference between Webhooks and Polling. This is the quote from the [Scala API](https://github.com/mukel/telegrambot4s):
 > Both methods are fully supported. Polling is the easiest method; it can be used locally without any additional requirements. It has been radically improved, doesn't flood the server (like other libraries do) and it's pretty fast.
 
 > Using webhooks requires a server (it won't work on your laptop). For a comprehensive reference check Marvin's Patent Pending Guide to All Things Webhook.
 
 So for this workshop, or examples in general **Polling** is the way to go.
-# Hello User Bot
+## Hello User Bot
 Let's greet the Bot and it should return that with a personalized greeting.
 
 * Create a Scala object in the bots package: `HelloBot`
@@ -119,9 +109,9 @@ hello - Simple Hello World.
 * Like before the `BotFather` will help with this.
 * Now lets say hello to your Bot (the command should be available, when hitting `/` in the text-field).
 
-# Counter Bot
+## Counter Bot
 (Here the [Solution Branch](https://github.com/pme123/play-scala-telegrambot4s/tree/add-callback-bot) if you have problems)
-## Callbacks
+### Callbacks
 The first step to implement a conversation with a user is to understand the concept of `callbacks`.
 To guide the user through a conversation you can provide a [keyboard](https://core.telegram.org/bots#keyboards).
 These keys (buttons) are identified with a callback identifier.
@@ -185,10 +175,18 @@ object CounterBotApp extends App {
 * Hit the button and create new buttons width `/counter`
 
 # Next steps (Next workshop;)
-This was the basic workshop. Now we want to do complexer conversations. To get to this next level we need quite some ingredients:
+This was the basic workshop. 
+## JSON-Client
+As mentioned above the wrapper hides the actual API. 
+If you want to check that out, check out the first version of this Workshop:
+* [play-scala-telegrambot4s](https://github.com/pme123/play-scala-telegrambot4s)
+* Here the reference: [JSON-API from Telegram](https://core.telegram.org/api)
+
+## Handling conversations
+Now we want to do complexer conversations. To get to this next level we need quite some ingredients:
 
 * Handle the state of each user.
 * Create a FSM (finite state machine) to design the conversation.
 * A running App that easily integrates everything - and in a later state provides the webhooks.
 
-Here starts the setup with Play to make more sense. As we use and integrate the FSM provided with Akka.
+I created a small library for that, check out: [play-akka-telegrambot4s](https://github.com/pme123/play-akka-telegrambot4s)
