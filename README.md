@@ -192,3 +192,5 @@ Now we want to do complexer conversations. To get to this next level we need qui
 * A running App that easily integrates everything - and in a later state provides the webhooks.
 
 I created a small library for that, check out: [play-akka-telegrambot4s](https://github.com/pme123/play-akka-telegrambot4s)
+
+Here is an example where I created a **step-by-step guide** you can follow: [scala-adapters-images](https://github.com/pme123/scala-adapters-images) 
